@@ -25,13 +25,37 @@ func SpaceMap(str string) string {
     }, str)
 }
 
+func CalculateEveryone(inpt string) int {
+    individuals := strings.Fields(inpt)
+    positives := make(map[rune]bool)
+    for _, c := range SpaceMap(individuals[0]) {
+        positives[c] = true
+    }
+
+    for _, indv := range individuals {
+        tmpPos := make(map[rune]bool)
+        for _, c := range indv {
+            tmpPos[c] = true
+        }
+        intersection := make(map[rune]bool)
+        for k := range positives {
+            if tmpPos[k] {
+                intersection[k] = true
+            }
+        }
+        positives = intersection
+    }
+    return len(positives)
+}
+
 func main() {
     inputlines := inputloader.ReadInputByEmptyLine("../data/input06.txt")
     // inputlines := []string{"abc", "c c c c a", "ace abce"}
     sum := 0
     for _, s := range inputlines {
-        sum += CalculateAnyone(s)
-        // fmt.Println(Calculateyes(s))
+        sum += CalculateEveryone(s)
+        // fmt.Println(CalculateEveryone(s))
     }
+    fmt.Println("total:")
     fmt.Println(sum)
 }
