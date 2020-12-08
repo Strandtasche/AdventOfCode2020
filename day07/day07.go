@@ -1,6 +1,7 @@
 package main
 
 import (
+	"strconv"
 	"strings"
     "fmt"
     "inputloader"
@@ -14,16 +15,19 @@ type Node struct {
     // this is a comment
     containsMine bool
     vertices []string
+    numbers []int
 }
 
-func parseBag(inpt string) (string, []string) {
+func parseBag(inpt string) (string, []string, []int) {
     regex := regexp.MustCompile(`\w*\s\w*\sbag`)
+    regex2 := regexp.MustCompile(`\d\s\w*\s\w*\sbag`)
     fields := strings.Fields(inpt)
     target := fields[0] + " " + fields[1]
     if fields[3] != "contains"{
         errors.New("failed parse")
     }
     parsed := regex.FindAllString(inpt, -1)
+    parsed2 := regex2.FindAllString(inpt, -1)
     if target != parsed[0][:len(parsed[0])-3] {
         errors.New("failed parse")
     }
@@ -35,11 +39,18 @@ func parseBag(inpt string) (string, []string) {
             break
         }
     }
-
     for i, s := range parsed {
         parsed[i] = s[:len(s)-4]
     }
-    return target, parsed[1:]
+    numbers := make([]int, len(parsed))
+    for i, s := range parsed2 {
+        numbers[i], _ = strconv.Atoi(string(s[0]))
+    }
+    if len(numbers) + 1 != len(parsed) {
+        errors.New("numbers parsed wrong")
+    }
+
+    return target, parsed[1:], numbers
 
 }
 
@@ -62,6 +73,20 @@ func countColors(graph map[string]*Node) int {
     return counter
 }
 
+
+func countBags(graph map[string]*Node, key string) int {
+    if len(graph[key].vertices) == 0 {
+        return 1
+    } else {
+        sum := 0
+        for i, s := range graph[key].vertices {
+            sum += graph[key].numbers[i] * countBags(graph, s)
+        }
+        fmt.Printf("key %s, number %d\n", key, sum)
+        return sum + 1
+    }
+}
+
 func main() {
     inputlines := inputloader.ReadInput("../data/input07.txt")
     // inputlines := []string{"light red bags contain 1 bright white bag, 2 muted yellow bags.",
@@ -73,12 +98,22 @@ func main() {
     //                         "vibrant plum bags contain 5 faded blue bags, 6 dotted black bags.",
     //                         "faded blue bags contain no other bags.",
     //                         "dotted black bags contain no other bags."}
+    // inputlines := []string{
+    //     "shiny gold bags contain 2 dark red bags.",
+    //     "dark red bags contain 2 dark orange bags.",
+    //     "dark orange bags contain 2 dark yellow bags.",
+    //     "dark yellow bags contain 2 dark green bags.",
+    //     "dark green bags contain 2 dark blue bags.",
+    //     "dark blue bags contain 2 dark violet bags.",
+    //     "dark violet bags contain no other bags.",
+    // }
+
 
     graph := make(map[string]*Node)
 
     for _, s := range inputlines {
-        target, vertices := parseBag(s)
-        graph[target] = &Node{false, vertices}
+        target, vertices, numbers := parseBag(s)
+        graph[target] = &Node{false, vertices, numbers}
     }
 
     graph["shiny gold"].containsMine = true
@@ -97,6 +132,7 @@ func main() {
 
     fmt.Println("total:")
     fmt.Println(countColors(graph) - 1)
+    fmt.Println(countBags(graph, "shiny gold") - 1)
     // for k, v := range graph {
     //     fmt.Println("key: " + k)
     //     fmt.Println(*v)
