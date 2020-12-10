@@ -7,19 +7,8 @@ import (
     "sort"
 )
 
-func checkSums (num int, preamble []int) bool {
-    permutations := make([]int, 25*24)
-    pos := 0
-    for m, i1 := range preamble {
-        for n, i2 := range preamble {
-            if m != n {
-                permutations[pos] = i1 + i2
-                pos++
-            }
-        }
-    }
-    return util.IntInSlice(num, permutations)
-
+func isValidStep(inpt int) bool {
+    return inpt == 1 || inpt == 2 || inpt == 3
 }
 
 
@@ -38,11 +27,36 @@ func main() {
     fmt.Println("printing diffs")
     for _, row := range diffs {
         distribution[row]++
-        fmt.Println(row)
     }
 
-    fmt.Println(distribution)
+    // fmt.Println(distribution)
 
-    fmt.Println(distribution[1] * (distribution[3] + 1) )
+    // fmt.Println(distribution[1] * (distribution[3] + 1) )
+
+    diffs = append(diffs, 3)
+    diffs = append(diffs, 100)
+    paths := make([]int, len(inputlinesInt))
+    paths[0] = 1
+
+    // fmt.Println(inputlinesInt)
+    // fmt.Println(diffs)
+
+    for it := range inputlinesInt {
+        left := len(paths) - it
+        if isValidStep(diffs[it]) && left > 1{
+            paths[it+1] += paths[it]
+        }
+        if isValidStep(diffs[it] + diffs[it+1]) && left > 2{
+            paths[it+2] += paths[it]
+        }
+        if isValidStep(diffs[it] + diffs[it+1] + diffs[it+2]) && left > 3{
+            paths[it+3] += paths[it]
+        }
+        // fmt.Printf("run %d\n", it)
+        // fmt.Println(paths)
+    }
+
+    fmt.Println(paths[len(paths)-1])
+
 
 }
