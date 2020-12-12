@@ -14,11 +14,32 @@ func abs(x int) int {
 	return x
 }
 
+func rotate(degrees int, x int, y int) (int, int) {
+    // radian := float64(degrees) * (180 / math.Pi)
+    // tmpWaypointDiffX := float64(x) * math.Cos(radian) - float64(y) * math.Sin(radian)
+    // tmpWaypointDiffY := float64(x) * math.Sin(radian) + float64(y) * math.Cos(radian)
+    // xNew := int(math.Round(tmpWaypointDiffX))
+    // yNew := int(math.Round(tmpWaypointDiffY))
+    switch rot := (degrees + 360) % 360; rot{
+    case 0:
+        return x, y
+    case 90:
+        return y, -x
+    case 180:
+        return -x, -y
+    case 270:
+        return -y, x
+    default:
+        return 0, 0
+    }
+}
+
 func main() {
     inputlines := inputloader.ReadInput("../data/input12.txt")
-    locX := 0
-    locY := 0
-    dir := 90
+    shiplocX := 0
+    shiplocY := 0
+    waypointDiffX := 10
+    waypointDiffY := 1
 
     for _, val := range inputlines {
         increase, err := strconv.Atoi(val[1:])
@@ -28,42 +49,28 @@ func main() {
         }
         switch instr := val[0]; instr {
         case 'N':
-            locY += increase
+            waypointDiffY += increase
         case 'S':
-            locY -= increase
+            waypointDiffY -= increase
         case 'E':
-            locX += increase
+            waypointDiffX += increase
         case 'W':
-            locX -= increase
+            waypointDiffX -= increase
         case 'R':
-            dir += increase
-            dir %= 360
+            waypointDiffX, waypointDiffY = rotate(increase, waypointDiffX, waypointDiffY)
         case 'L':
-            dir -= increase
-            dir += 360
-            dir %= 360
+            waypointDiffX, waypointDiffY = rotate(-increase, waypointDiffX, waypointDiffY)
         case 'F':
-            switch k := dir; k{
-            case 0:
-                locY += increase
-            case 90:
-                locX += increase
-            case 180:
-                locY -= increase
-            case 270:
-                locX -= increase
-            default:
-                fmt.Println("error, F number wrong")
-                return
-            }
+            shiplocX += increase * waypointDiffX
+            shiplocY += increase * waypointDiffY
         default:
             fmt.Println("error! letter wrong")
             return
         }
-        fmt.Printf("X: %d, Y: %d, dir: %d\n", locX, locY, dir )
+        fmt.Printf("X: %d, Y: %d, dir: %d, %d\n", shiplocX, shiplocY, waypointDiffX, waypointDiffY)
     }
 
-    fmt.Println(abs(locX) + abs(locY))
+    fmt.Println(abs(shiplocX) + abs(shiplocY))
 
 
 }
