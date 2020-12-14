@@ -8,86 +8,81 @@ import (
     // "sort"
 )
 
-type Field struct {
-    val []byte
-    len_row int
-    len_col int
+var field string
+var width int
+var height int
+
+func prettyPrint(field []byte) {
+    for i:= 0; i < height; i++ {
+        fmt.Println(string(field[i*width:(i+1)*width]))
+    }
 }
 
-func iterateGame(field Field) Field {
-    newfieldbyte := make([]byte, len(field.val))
-    copy(newfieldbyte, field.val)
-    newField := Field{newfieldbyte, field.len_row, field.len_col}
-
-    for it := 0; it < field.len_row; it++ {
-        for it2 := 0; it2 < field.len_col; it2++ {
-            newField.val[it * newField.len_col + it2] = singleChair(getArea(field, it, it2))
-        }
-    }
-    return newField
+func charValid(row int, col int) bool {
+    return row < width && col < height && row >= 0 && col >= 0
 }
-
-func singleChair(inpt []byte) byte {
-    if inpt[4] == '.' {
-        return '.'
-    }
-    occ := 0
-    for i := range inpt {
-        if i != 4 {
-            if inpt[i] == '#' {
-                occ++
-            }
-        }
-    }
-
-    if inpt[4] == 'L' && occ == 0 {
-        return '#'
-    }
-    if inpt[4] == '#' && occ >= 4 {
-        return 'L'
-    }
-    return inpt[4]
-}
-
-func getArea(field Field, row int, col int) []byte {
-    area := []byte{getChar(field, row-1, col-1), getChar(field, row-1, col), getChar(field, row-1, col+1),
-                   getChar(field, row, col-1), getChar(field, row, col), getChar(field, row, col+1),
-                   getChar(field, row+1, col-1), getChar(field, row+1, col), getChar(field, row+1, col+1)}
-    return area
-}
-
-func getChar(field Field, row int, col int) byte {
-    if row >= field.len_row || col >= field.len_col || row < 0 || col < 0 {
-        return '.'
-    }
-    return field.val[row * field.len_col + col]
-}
-
-func prettyPrint(field Field) {
-    for i:= 0; i < field.len_row; i++ {
-        fmt.Println(string(field.val[i*field.len_col:(i+1)*field.len_col]))
-    }
-
-}
-
 
 
 func main() {
-    inputlines := inputloader.ReadInput("../data/input11_alt.txt")
+    inputlines := inputloader.ReadInput("../data/input11.txt")
     // inputlines := []string{"LLL","LLL","LLL"}
     seatingString := []byte(strings.Join(inputlines, ""))
-    width := len(inputlines[0])
-    height := len(inputlines)
+    newSeating := make([]byte, len(seatingString))
+    width = len(inputlines[0])
+    height = len(inputlines)
+    matrix := []int{-1, 0, 1}
+    var nocc int
 
+    for {
+        for i := 0; i < width; i++ {
+            for j := 0; j < height; j++ {
+                if seatingString[i + j*width] == '.' {
+                    newSeating[i + j * width] = '.'
+                    continue
+                }
+                nocc = 0
+                for _, up := range matrix {
+                    for _, side := range matrix {
+                        if !(up == 0 && side == 0) && charValid(i + up, j + side) {
+                            if seatingString[i+up + (j + side) * width] == '#' {
+                                nocc++
+                            }
+                        }
+                    }
+                }
+                if seatingString[i + j * width] == 'L' {
+                    if nocc == 0 {
+                        newSeating[i + j * width] = '#'
+                    } else {
+                        newSeating[i + j * width] = 'L'
+                    }
 
-    for i := 0; i < width; i++ {
-        for j := 0; i < height; j++ {
-            for
+                } else if seatingString[i + j * width] == '#' {
+                    if nocc >= 4 {
+                        newSeating[i + j * width] = 'L'
+                    } else {
+                        newSeating[i + j * width] = '#'
+                    }
+                }
+            }
+        }
+
+        if string(seatingString) == string(newSeating) {
+            fmt.Println("found it!")
+            prettyPrint(newSeating)
+            break
+        } else {
+            copy(seatingString, newSeating)
+            newSeating = make([]byte, len(seatingString))
         }
     }
 
-    fmt.Println("done")
 
     count := 0
+    for _, val := range newSeating{
+        if val == '#'{
+            count++
+        }
+    }
     fmt.Println(count)
 }
