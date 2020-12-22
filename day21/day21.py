@@ -1,7 +1,7 @@
 import re
 from collections import Counter
 
-with open('/home/tobias/Downloads/input.txt') as f:
+with open('./data/input21.txt') as f:
     inpt = f.read()
 # Vinpt = "mxmxvkd kfcds sqjhc nhms (contains dairy, fish)\ntrh fvjkl sbzzf mxmxvkd (contains dairy)\n" \
 #        "sqjhc fvjkl (contains soy)\nsqjhc mxmxvkd sbzzf (contains fish)"
